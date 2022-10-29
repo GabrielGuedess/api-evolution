@@ -46,6 +46,7 @@
           "module",
           "/^routes/",
           "/^database/",
+          "/^cache/",
           "/^module/",
           "/^shared/",
           "/^config/",

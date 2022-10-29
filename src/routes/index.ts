@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { authenticateRouter } from './authenticate.routes';
+import { cacheRouter } from './cache.routes';
 import { clientRouter } from './client.routes';
 import { developerRouter } from './developer.routes';
 import { galleryRouter } from './gallery.routes';
@@ -19,3 +20,4 @@ router.use('/genre', genreRouter);
 router.use('/gallery', galleryRouter);
 router.use('/developer', developerRouter);
 router.use('/platform', platformRouter);
+router.use('/cache', cacheRouter);
