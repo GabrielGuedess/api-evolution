@@ -7,24 +7,114 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Clients {
-  id          String   @id @default(uuid())
-  email       String   @unique
-  username    String   @unique
-  password    String
-  name        String
-  lastname    String
-  cpf         String
-  cellphone   String
-  date        DateTime
-  cep         String
-  logradouro  String
-  numero      String
-  complemento String
-  referencia  String
-  bairro      String
-  cidade      String
-  UF          String
+model Client {
+  id              String          @id @default(uuid())
+  email           String          @unique
+  username        String          @unique
+  avatar          String?
+  password        String
+  name            String
+  lastname        String
+  cpf             String
+  cellphone       String
+  date            DateTime
+  cep             String
+  logradouro      String
+  numero          String
+  complemento     String
+  referencia      String
+  bairro          String
+  cidade          String
+  UF              String
+  order           Order[]
+  games_favorites Game_Favorite[]
 
   @@map("clients")
+}
+
+model Game_Favorite {
+  id        String @id @default(uuid())
+  client    Client @relation(fields: [client_id], references: [id])
+  client_id String
+  game      Game   @relation(fields: [game_id], references: [id])
+  game_id   String
+
+  @@map("games_favorites")
+}
+
+model Order {
+  id                String @id @default(uuid())
+  payment_intent_id String
+  total_in_cents    Int
+  card_brand        String
+  card_last4        String
+  client            Client @relation(fields: [client_id], references: [id])
+  client_id         String
+  games             Game[]
+
+  @@map("orders")
+}
+
+model Game {
+  id              String          @id @default(uuid())
+  name            String          @unique
+  slug            String
+  release_date    DateTime
+  score           Decimal
+  video           String
+  image           String
+  primary_color   String
+  background      String
+  description     String
+  price           Float
+  order           Order?          @relation(fields: [order_id], references: [id])
+  order_id        String?
+  games_favorites Game_Favorite[]
+  genres          Genre[]
+  games_gallery   Game_Gallery[]
+  developers      Developer[]
+  platforms       Platform[]
+
+  @@map("games")
+}
+
+model Genre {
+  id    String @id @default(uuid())
+  name  String @unique
+  slug  String
+  games Game[]
+
+  @@map("genres")
+}
+
+model Game_Gallery {
+  id        String @id @default(uuid())
+  src       String @unique
+  alt       String
+  image_fit String
+  width     Float
+  height    Float
+  type      String
+  game_id   Game   @relation(fields: [games_id], references: [id])
+  games_id  String
+
+  @@map("games_gallery")
+}
+
+model Developer {
+  id    String @id @default(uuid())
+  name  String @unique
+  slug  String
+  games Game[]
+
+  @@map("developers")
+}
+
+model Platform {
+  id    String @id @default(uuid())
+  name  String @unique
+  slug  String
+  games Game[]
+
+  @@map("platforms")
 }
