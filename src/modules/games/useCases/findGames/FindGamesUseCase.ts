@@ -10,31 +10,29 @@ export class FindGamesUseCase {
 
     const cacheGames = await redis.get(cacheKey);
 
-    console.time('Find Games');
-
     if (cacheGames) {
-      console.timeEnd('Find Games');
-      console.log('Cache');
       return JSON.parse(cacheGames);
     }
 
     const games = await prisma.game.findMany({
-      skip: +page - 1,
-      take: +page * 12,
+      skip: !!page ? +page - 1 : 0,
+      take: !!page ? +page * 12 : undefined,
       include: {
         genres: true,
         developers: true,
         platforms: true,
         games_gallery: true,
         games_favorites: true,
-        order: true,
+        pc_system: {
+          select: {
+            minimal: true,
+            recommended: true,
+          },
+        },
       },
     });
 
     await redis.set(cacheKey, JSON.stringify(games));
-
-    console.log('No cache');
-    console.timeEnd('Find Games');
 
     return games;
   }
