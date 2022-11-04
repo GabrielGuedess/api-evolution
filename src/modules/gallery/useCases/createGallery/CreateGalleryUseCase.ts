@@ -6,6 +6,8 @@ import { resolve } from 'path';
 
 import { prisma } from 'database/prismaClient';
 
+import { redis } from 'cache';
+
 import { ICreateGalleryDTO } from 'modules/gallery/dtos/ICreateGalleryDTO';
 
 import { AppError } from 'shared/errors/AppError';
@@ -24,9 +26,21 @@ export class CreateGalleryUseCase {
   }: ICreateGalleryDTO) {
     const pathImage = resolve(upload.tmpFolder, image);
 
+    await redis.flushdb();
+
+    const game = await prisma.game.findFirst({
+      where: {
+        id: games_id,
+      },
+      select: {
+        slug: true,
+      },
+    });
+
     const gameImage = await cloudinary.uploader
       .upload(pathImage, {
-        folder: 'gamesGallery',
+        folder: `gamesGallery/${game?.slug}`,
+        resource_type: 'auto',
       })
       .catch(async err => {
         throw new AppError(err.message);
