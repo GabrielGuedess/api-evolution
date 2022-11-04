@@ -2,6 +2,7 @@ import { hash } from 'bcrypt';
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
 import { resolve } from 'path';
+import Stripe from 'stripe';
 
 import { prisma } from 'database/prismaClient';
 
@@ -31,6 +32,14 @@ export class CreateClientUseCase {
     cidade,
     UF,
   }: ICreateClientDTO) {
+    if (!process.env.STRIPE_KEY) {
+      throw new AppError('Stripe key invalid!');
+    }
+
+    const stripe = new Stripe(process.env.STRIPE_KEY, {
+      apiVersion: '2022-08-01',
+    });
+
     const clientExistsEmail = await prisma.client.findFirst({
       where: {
         email: {
@@ -73,6 +82,18 @@ export class CreateClientUseCase {
         });
     }
 
+    const customer = await stripe.customers.create({
+      name: `${name} ${lastname}`,
+      email: email,
+      phone: cellphone,
+      address: {
+        line1: `${logradouro} ${numero}`,
+        line2: `${complemento} ${referencia}`,
+        city: cidade,
+        state: UF,
+      },
+    });
+
     const client = await prisma.client.create({
       data: {
         email,
@@ -92,9 +113,10 @@ export class CreateClientUseCase {
         bairro,
         cidade,
         UF,
+        id_customer: customer.id,
       },
     });
 
-    return client;
+    return { client, customer };
   }
 }
