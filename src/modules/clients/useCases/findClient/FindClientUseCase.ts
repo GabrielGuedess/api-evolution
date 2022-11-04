@@ -11,7 +11,6 @@ export class FindClientUseCase {
         id: client_id,
       },
       include: {
-        avatar: true,
         order: true,
         games_favorites: true,
       },
