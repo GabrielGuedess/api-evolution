@@ -1,4 +1,6 @@
 import 'express-async-errors';
+
+import cors from 'cors';
 import express, { NextFunction, Request, Response } from 'express';
 
 import { AppError } from 'shared/errors/AppError';
@@ -6,6 +8,8 @@ import { AppError } from 'shared/errors/AppError';
 import { router } from './routes';
 
 const app = express();
+
+app.use(cors({ origin: '*', credentials: true }));
 
 app.use(express.json());
 
