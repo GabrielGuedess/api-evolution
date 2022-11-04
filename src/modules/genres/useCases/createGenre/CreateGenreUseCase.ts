@@ -1,5 +1,7 @@
 import { prisma } from 'database/prismaClient';
 
+import { redis } from 'cache';
+
 import { ICreateGenreDTO } from 'modules/genres/dtos/ICreateGenreDTO';
 
 import { AppError } from 'shared/errors/AppError';
@@ -15,6 +17,8 @@ export class CreateGenreUseCase {
     if (genreExists) {
       throw new AppError('Genre already Exists!');
     }
+
+    await redis.flushdb();
 
     const genre = await prisma.genre.create({
       data: {

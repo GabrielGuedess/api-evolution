@@ -1,5 +1,7 @@
 import { prisma } from 'database/prismaClient';
 
+import { redis } from 'cache';
+
 import { ICreateDeveloperDTO } from 'modules/developers/dtos/ICreateDeveloperDTO';
 
 import { AppError } from 'shared/errors/AppError';
@@ -15,6 +17,8 @@ export class CreateDeveloperUseCase {
     if (developerExists) {
       throw new AppError('Developer already Exists!');
     }
+
+    await redis.flushdb();
 
     const developer = await prisma.developer.create({
       data: {
