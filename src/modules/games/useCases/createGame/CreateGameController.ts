@@ -18,8 +18,8 @@ export class CreateGameController {
       throw new AppError('Background error!');
     }
 
-    if (!files['video'][0]) {
-      throw new AppError('Video error!');
+    if (!files['video']) {
+      console.log('Video Empty');
     }
 
     const {
@@ -34,6 +34,12 @@ export class CreateGameController {
       platforms,
     } = req.body;
 
+    let video = null;
+
+    if (files['video']) {
+      video = files['video'][0].path;
+    }
+
     const createGameUseCase = new CreateGameUseCase();
 
     const result = await createGameUseCase.execute({
@@ -41,7 +47,7 @@ export class CreateGameController {
       slug,
       release_date,
       score,
-      video: files['video'][0].path,
+      video: video,
       image: files['imageCard'][0].path,
       background: files['background'][0].path,
       description,

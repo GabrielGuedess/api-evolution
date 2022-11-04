@@ -4,6 +4,8 @@ import { resolve } from 'path';
 
 import { prisma } from 'database/prismaClient';
 
+import { redis } from 'cache';
+
 import { ICreateGameDTO } from 'modules/games/dtos/ICreateGameDTO';
 
 import { AppError } from 'shared/errors/AppError';
@@ -27,22 +29,10 @@ export class CreateGameUseCase {
     developers,
     platforms,
   }: ICreateGameDTO) {
-    const gameExists = await prisma.game.findFirst({
-      where: {
-        slug: {
-          mode: 'insensitive',
-          equals: slug,
-        },
-      },
-    });
-
-    if (gameExists) {
-      throw new AppError('Game already Exists!');
-    }
+    await redis.flushdb();
 
     const pathImage = resolve(upload.tmpFolder, image);
     const pathBackground = resolve(upload.tmpFolder, background);
-    const pathVideo = resolve(upload.tmpFolder, video);
 
     const color = await Vibrant.from(pathImage).getPalette();
 
@@ -50,11 +40,9 @@ export class CreateGameUseCase {
       throw new AppError('Error generate primary color');
     }
 
-    console.log(color);
-
     const imageCard = await cloudinary.uploader
       .upload(pathImage, {
-        folder: 'imagesCard',
+        folder: `imagesCard/${slug}`,
       })
       .catch(async err => {
         throw new AppError(err.message);
@@ -65,7 +53,7 @@ export class CreateGameUseCase {
 
     const imageBackground = await cloudinary.uploader
       .upload(pathBackground, {
-        folder: 'imagesBackground',
+        folder: `imagesBackground/${slug}`,
       })
       .catch(async err => {
         throw new AppError(err.message);
@@ -74,51 +62,80 @@ export class CreateGameUseCase {
         await fs.promises.unlink(pathBackground);
       });
 
-    const imageVideo = await cloudinary.uploader
-      .upload(pathVideo, {
-        folder: 'videosBackground',
-        resource_type: 'video',
-      })
-      .catch(async err => {
-        throw new AppError(err.message);
-      })
-      .finally(async () => {
-        await fs.promises.unlink(pathVideo);
-      });
+    let imageVideo;
+
+    if (video) {
+      const pathVideo = resolve(upload.tmpFolder, video);
+
+      imageVideo = await cloudinary.uploader
+        .upload(pathVideo, {
+          folder: `videosBackground/${slug}`,
+          resource_type: 'video',
+        })
+        .catch(async err => {
+          throw new AppError(err.message);
+        })
+        .finally(async () => {
+          await fs.promises.unlink(pathVideo);
+        });
+    }
 
     const game = await prisma.game
-      .create({
-        data: {
+      .upsert({
+        where: {
+          name,
+        },
+        create: {
           name,
           slug,
           release_date,
           score: +score,
-          video: imageVideo.url,
+          video: !!imageVideo?.url ? imageVideo?.url : null,
           image: imageCard.url,
           primary_color: color.LightMuted?.hex,
           background: imageBackground.url,
           description,
           price: +price,
           genres: {
-            connect: [
-              ...genres.map(genre => ({
-                id: genre,
-              })),
-            ],
+            connect: genres.map(genre => ({
+              id: genre,
+            })),
           },
           developers: {
-            connect: [
-              ...developers.map(developer => ({
-                id: developer,
-              })),
-            ],
+            connect: developers.map(developer => ({
+              id: developer,
+            })),
           },
           platforms: {
-            connect: [
-              ...platforms.map(platform => ({
-                id: platform,
-              })),
-            ],
+            connect: platforms.map(platform => ({
+              id: platform,
+            })),
+          },
+        },
+        update: {
+          slug,
+          release_date,
+          score: +score,
+          video: !!imageVideo?.url ? imageVideo?.url : null,
+          image: imageCard.url,
+          primary_color: color.LightMuted?.hex,
+          background: imageBackground.url,
+          description,
+          price: +price,
+          genres: {
+            connect: genres.map(genre => ({
+              id: genre,
+            })),
+          },
+          developers: {
+            connect: developers.map(developer => ({
+              id: developer,
+            })),
+          },
+          platforms: {
+            connect: platforms.map(platform => ({
+              id: platform,
+            })),
           },
         },
         include: {
@@ -126,7 +143,6 @@ export class CreateGameUseCase {
           developers: true,
           platforms: true,
           games_gallery: true,
-          games_favorites: true,
           order: true,
         },
       })

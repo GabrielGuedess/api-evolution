@@ -3,7 +3,7 @@ export interface ICreateGameDTO {
   slug: string;
   release_date: Date;
   score: number;
-  video: string;
+  video?: string | null;
   image: string;
   background: string;
   description: string;
