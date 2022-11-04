@@ -4,10 +4,8 @@ import { redis } from 'cache';
 
 export const cacheRouter = Router();
 
-cacheRouter.get('/clear-page/:page', async (req, res) => {
-  const { page } = req.params;
-
-  await redis.del(`games:page-${page}`);
+cacheRouter.get('/clear', async (req, res) => {
+  await redis.flushdb();
 
   res.json({ message: 'Cache cleaned!' });
 });
