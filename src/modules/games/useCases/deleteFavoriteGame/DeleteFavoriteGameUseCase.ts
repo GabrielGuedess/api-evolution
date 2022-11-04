@@ -1,28 +1,35 @@
 import { prisma } from 'database/prismaClient';
 
+import { redis } from 'cache';
+
 import { IDeleteFavoriteGameDTO } from 'modules/games/dtos/IDeleteFavoriteGameDTO';
 
-import { AppError } from 'shared/errors/AppError';
-
 export class DeleteFavoriteGameUseCase {
-  async execute({ id, client_id }: IDeleteFavoriteGameDTO) {
-    const gameExists = await prisma.game_Favorite.findFirst({
+  async execute({ client_id, game_id }: IDeleteFavoriteGameDTO) {
+    await redis.flushdb();
+
+    const gameDeleted = await prisma.game_Favorite.update({
       where: {
-        id,
         client_id,
       },
-    });
-
-    if (!gameExists) {
-      throw new AppError('Game is not on wishlist!');
-    }
-
-    const game = await prisma.game_Favorite.delete({
-      where: {
-        id,
+      data: {
+        games: {
+          disconnect: {
+            id: game_id,
+          },
+        },
+      },
+      select: {
+        games: {
+          include: {
+            genres: true,
+            developers: true,
+            platforms: true,
+          },
+        },
       },
     });
 
-    return game;
+    return gameDeleted.games;
   }
 }
