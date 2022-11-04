@@ -10,6 +10,6 @@ COPY . .
 
 EXPOSE 3333
 
-USER node
+USER root
 
 CMD [ "yarn", "dev" ]
