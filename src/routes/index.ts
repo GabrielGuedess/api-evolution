@@ -9,6 +9,7 @@ import { gameRouter } from './game.routes';
 import { genreRouter } from './genre.routes';
 import { orderRouter } from './order.routes';
 import { platformRouter } from './platform.routes';
+import { pcSystemRouter } from './system.routes';
 
 export const router = Router();
 
@@ -20,4 +21,5 @@ router.use('/genre', genreRouter);
 router.use('/gallery', galleryRouter);
 router.use('/developer', developerRouter);
 router.use('/platform', platformRouter);
+router.use('/system', pcSystemRouter);
 router.use('/cache', cacheRouter);
