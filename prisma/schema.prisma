@@ -26,6 +26,7 @@ model Client {
   bairro          String
   cidade          String
   UF              String
+  id_customer     String
   order           Order[]
   games_favorites Game_Favorite[]
 
@@ -35,22 +36,22 @@ model Client {
 model Game_Favorite {
   id        String @id @default(uuid())
   client    Client @relation(fields: [client_id], references: [id])
-  client_id String
-  game      Game   @relation(fields: [game_id], references: [id])
-  game_id   String
+  client_id String @unique
+  games     Game[]
 
   @@map("games_favorites")
 }
 
 model Order {
-  id                String @id @default(uuid())
+  id                String   @id @default(uuid())
   payment_intent_id String
   total_in_cents    Int
   card_brand        String
   card_last4        String
-  client            Client @relation(fields: [client_id], references: [id])
+  client            Client   @relation(fields: [client_id], references: [id])
   client_id         String
   games             Game[]
+  created_at        DateTime @default(now())
 
   @@map("orders")
 }
@@ -58,22 +59,22 @@ model Order {
 model Game {
   id              String          @id @default(uuid())
   name            String          @unique
-  slug            String
+  slug            String          @unique
   release_date    DateTime
   score           Decimal
-  video           String
+  video           String?
   image           String
   primary_color   String
   background      String
   description     String
   price           Float
-  order           Order?          @relation(fields: [order_id], references: [id])
-  order_id        String?
+  order           Order[]
   games_favorites Game_Favorite[]
   genres          Genre[]
   games_gallery   Game_Gallery[]
   developers      Developer[]
   platforms       Platform[]
+  pc_system       PcSystem?
 
   @@map("games")
 }
@@ -117,4 +118,40 @@ model Platform {
   games Game[]
 
   @@map("platforms")
+}
+
+model PcSystem {
+  id          String       @id @default(uuid())
+  game        Game         @relation(fields: [game_id], references: [id])
+  game_id     String       @unique
+  minimal     Minimal?
+  recommended Recommended?
+
+  @@map("pc_system")
+}
+
+model Minimal {
+  id           String    @id @default(uuid())
+  so           String
+  cpu          String
+  memory       String
+  gpu          String
+  hd           String
+  pc_system    PcSystem? @relation(fields: [pc_system_id], references: [id])
+  pc_system_id String?    @unique
+
+  @@map("minimal")
+}
+
+model Recommended {
+  id           String    @id @default(uuid())
+  so           String
+  cpu          String
+  memory       String
+  gpu          String
+  hd           String
+  pc_system    PcSystem? @relation(fields: [pc_system_id], references: [id])
+  pc_system_id String?    @unique
+
+  @@map("recommended")
 }
