@@ -9,7 +9,7 @@ import { ICreatePaymentIntentDTO } from 'modules/orders/dtos/ICreatePaymentInten
 import { AppError } from 'shared/errors/AppError';
 
 export class CreatePaymentIntentUseCase {
-  async execute({ cart }: ICreatePaymentIntentDTO) {
+  async execute({ cart, client_id }: ICreatePaymentIntentDTO) {
     if (!process.env.STRIPE_KEY) {
       throw new AppError('Stripe key invalid!');
     }
@@ -24,6 +24,12 @@ export class CreatePaymentIntentUseCase {
       },
     });
 
+    const client = await prisma.client.findUnique({
+      where: {
+        id: client_id,
+      },
+    });
+
     if (!games.length) {
       throw new AppError('No valid games found!');
     }
@@ -32,9 +38,14 @@ export class CreatePaymentIntentUseCase {
       (games.reduce((acc, game) => acc + game.price, 0) * 100).toFixed(0),
     );
 
+    if (!client?.id_customer) {
+      throw new AppError('Invalid Customer Id!');
+    }
+
     try {
       const paymentIntent = await stripe.paymentIntents.create({
         amount: total_in_cents,
+        customer: client.id_customer,
         currency: 'BRL',
         metadata: { games: JSON.stringify(games.map(game => game.id)) },
       });
