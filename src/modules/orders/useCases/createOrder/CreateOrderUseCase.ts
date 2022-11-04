@@ -36,7 +36,7 @@ export class CreateOrderUseCase {
     let paymentInfo;
 
     try {
-      paymentInfo = await stripe.paymentMethods.retrieve(paymentMethod?.data);
+      paymentInfo = await stripe.paymentMethods.retrieve(paymentMethod);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       throw new AppError(err.message as string);
@@ -53,6 +53,16 @@ export class CreateOrderUseCase {
         payment_intent_id: paymentIntentId,
         card_brand: paymentInfo.card.brand,
         card_last4: paymentInfo.card.last4,
+        games: {
+          connect: [
+            ...cart.map(cart => ({
+              id: cart,
+            })),
+          ],
+        },
+      },
+      select: {
+        games: true,
       },
     });
 
