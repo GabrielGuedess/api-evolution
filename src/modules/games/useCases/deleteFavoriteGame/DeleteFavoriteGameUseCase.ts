@@ -21,10 +21,18 @@ export class DeleteFavoriteGameUseCase {
       },
       select: {
         games: {
-          include: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            release_date: true,
             genres: true,
             developers: true,
+            image: true,
+            score: true,
+            price: true,
             platforms: true,
+            primary_color: true,
           },
         },
       },
