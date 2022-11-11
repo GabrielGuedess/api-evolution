@@ -29,5 +29,9 @@ export class FindClientForCreateUseCase {
     if (clientUser && !clientEmail) {
       throw new AppError('Username already Exists!');
     }
+
+    return {
+      ok: true,
+    };
   }
 }
