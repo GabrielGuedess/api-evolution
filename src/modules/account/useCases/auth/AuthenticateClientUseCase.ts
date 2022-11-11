@@ -11,14 +11,14 @@ import { AppError } from 'shared/errors/AppError';
 
 export class AuthenticateClientUseCase {
   async execute({ email, password }: IAuthenticateClientDTO) {
-    const client = await prisma.client.findUnique({
+    const client = await prisma.client.findFirst({
       where: {
         email,
       },
     });
 
     if (!client) {
-      throw new AppError('E-mail or password invalid');
+      throw new AppError('E-mail inválido');
     }
 
     await redis.flushdb();
@@ -26,7 +26,7 @@ export class AuthenticateClientUseCase {
     const passwordMatch = await compare(password, client.password);
 
     if (!passwordMatch) {
-      throw new AppError('E-mail or password invalid');
+      throw new AppError('Senha inválida');
     }
 
     const token = sign({ email }, '23429ccdac6bcc82ef1d5af20b008fff', {
