@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native"]
 }
 
 datasource db {
@@ -138,7 +139,7 @@ model Minimal {
   gpu          String
   hd           String
   pc_system    PcSystem? @relation(fields: [pc_system_id], references: [id])
-  pc_system_id String?    @unique
+  pc_system_id String?   @unique
 
   @@map("minimal")
 }
@@ -151,7 +152,7 @@ model Recommended {
   gpu          String
   hd           String
   pc_system    PcSystem? @relation(fields: [pc_system_id], references: [id])
-  pc_system_id String?    @unique
+  pc_system_id String?   @unique
 
   @@map("recommended")
 }
