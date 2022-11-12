@@ -43,6 +43,7 @@ export class CreateGameUseCase {
     const imageCard = await cloudinary.uploader
       .upload(pathImage, {
         folder: `imagesCard/${slug}`,
+        secure: true,
       })
       .catch(async err => {
         throw new AppError(err.message);
@@ -54,6 +55,7 @@ export class CreateGameUseCase {
     const imageBackground = await cloudinary.uploader
       .upload(pathBackground, {
         folder: `imagesBackground/${slug}`,
+        secure: true,
       })
       .catch(async err => {
         throw new AppError(err.message);
@@ -70,6 +72,7 @@ export class CreateGameUseCase {
       imageVideo = await cloudinary.uploader
         .upload(pathVideo, {
           folder: `videosBackground/${slug}`,
+          secure: true,
           resource_type: 'video',
         })
         .catch(async err => {

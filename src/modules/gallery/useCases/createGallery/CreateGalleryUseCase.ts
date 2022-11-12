@@ -40,6 +40,7 @@ export class CreateGalleryUseCase {
     const gameImage = await cloudinary.uploader
       .upload(pathImage, {
         folder: `gamesGallery/${game?.slug}`,
+        secure: true,
         resource_type: 'auto',
       })
       .catch(async err => {

@@ -30,6 +30,7 @@ export class UploadAvatarClientUseCase {
       avatarImage = await cloudinary.uploader
         .upload(pathAvatar, {
           folder: 'avatars',
+          secure: true,
           public_id: clientExistsEmail.username,
         })
         .catch(async err => {
