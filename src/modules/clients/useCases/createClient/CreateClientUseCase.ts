@@ -43,7 +43,6 @@ export class CreateClientUseCase {
     const clientExistsEmail = await prisma.client.findFirst({
       where: {
         email: {
-          mode: 'insensitive',
           equals: email,
         },
       },
@@ -52,7 +51,6 @@ export class CreateClientUseCase {
     const clientExistsUsername = await prisma.client.findFirst({
       where: {
         username: {
-          mode: 'insensitive',
           equals: username,
         },
       },
